@@ -362,8 +362,9 @@ async def givelo(
     await interaction.response.send_message(
         f"✅ {amount} ELO выдано {member.mention}"
     )
-    
-    @bot.tree.command(
+
+
+@bot.tree.command(
     name="ngivelo",
     description="Снять ELO"
 )
@@ -396,8 +397,9 @@ async def ngivelo(
     await interaction.response.send_message(
         f"❌ {amount} ELO снято с {member.mention}"
     )
-    
-    @bot.tree.command(
+
+
+@bot.tree.command(
     name="profile",
     description="Ваш профиль"
 )
