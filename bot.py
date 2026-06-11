@@ -425,8 +425,8 @@ async def profile(
             ephemeral=True
         )
 
-    nickname = users[uid]["nickname"]
-    elo = users[uid]["elo"]
+    nickname = users.get(uid, {}).get("nickname", "Unknown")
+elo = users.get(uid, {}).get("elo", 0)
 
     sorted_users = sorted(
         users.items(),
