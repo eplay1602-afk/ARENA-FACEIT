@@ -1,75 +1,118 @@
 import discord
 from discord.ext import commands
+from discord.ui import View
 import os
 
 TOKEN = os.getenv("TOKEN")
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.guilds = True
+intents.members = True
 
 bot = commands.Bot(
     command_prefix="!",
     intents=intents
 )
 
+# =========================
+# КНОПКА ВЕРИФИКАЦИИ
+# =========================
+
+class VerifyView(View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(
+        label="Пройти верификацию",
+        style=discord.ButtonStyle.green,
+        emoji="🔐"
+    )
+    async def verify_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+
+        await interaction.response.send_message(
+            "🔐 Для получения доступа введите:\n\n"
+            "`!verify ID Ник`\n\n"
+            "Пример:\n"
+            "`!verify 12345 ARENA_Player`",
+            ephemeral=True
+        )
+
+# =========================
+# СОБЫТИЯ
+# =========================
+
 @bot.event
 async def on_ready():
     print(f"Bot online: {bot.user}")
 
-# Проверка работы бота
+# =========================
+# КОМАНДЫ
+# =========================
+
 @bot.command()
 async def ping(ctx):
     await ctx.send("🏓 Pong!")
 
-# Приветствие
 @bot.command()
-async def hello(ctx):
-    await ctx.send(f"Привет, {ctx.author.mention}!")
+@commands.has_permissions(administrator=True)
+async def setupverify(ctx):
 
-# Информация о сервере
+    embed = discord.Embed(
+        title="🔐 Верификация",
+        description=(
+            "Для получения доступа к серверу нажмите кнопку ниже.\n\n"
+            "После нажатия бот покажет инструкцию."
+        ),
+        color=discord.Color.green()
+    )
+
+    await ctx.send(
+        embed=embed,
+        view=VerifyView()
+    )
+
 @bot.command()
-async def server(ctx):
-    await ctx.send(f"Сервер: {ctx.guild.name}")
+async def verify(ctx, player_id, nickname):
 
-# Аватар пользователя
-@bot.command()
-async def avatar(ctx):
-    await ctx.send(ctx.author.display_avatar.url)
+    if ctx.channel.name != "получение-доступа":
+        await ctx.send(
+            "❌ Верификацию можно проходить только в канале #получение-доступа"
+        )
+        return
 
-# Очистка сообщений
-@bot.command()
-@commands.has_permissions(manage_messages=True)
-async def clear(ctx, amount: int):
-    await ctx.channel.purge(limit=amount + 1)
-    msg = await ctx.send(f"Удалено {amount} сообщений.")
-    await msg.delete(delay=3)
+    role = discord.utils.get(ctx.guild.roles, name="Игрок")
 
-# Кик участника
-@bot.command()
-@commands.has_permissions(kick_members=True)
-async def kick(ctx, member: discord.Member, *, reason="Без причины"):
-    await member.kick(reason=reason)
-    await ctx.send(f"👢 {member.mention} был кикнут. Причина: {reason}")
+    if role is None:
+        await ctx.send(
+            "❌ Создай роль с названием 'Игрок'"
+        )
+        return
 
-# Бан участника
-@bot.command()
-@commands.has_permissions(ban_members=True)
-async def ban(ctx, member: discord.Member, *, reason="Без причины"):
-    await member.ban(reason=reason)
-    await ctx.send(f"🔨 {member.mention} был забанен. Причина: {reason}")
+    await ctx.author.add_roles(role)
 
-# Обработка ошибок
+    await ctx.send(
+        f"✅ {ctx.author.mention}, верификация успешно пройдена!\n"
+        f"🆔 ID: {player_id}\n"
+        f"👤 Ник: {nickname}"
+    )
+
+# =========================
+# ОШИБКИ
+# =========================
+
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send("❌ У тебя нет прав для этой команды.")
-    elif isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("❌ Не хватает аргументов.")
-    elif isinstance(error, commands.MemberNotFound):
-        await ctx.send("❌ Участник не найден.")
-    else:
-        print(error)
 
-print("TOKEN =", TOKEN)
+    if isinstance(error, commands.CommandNotFound):
+        return
+
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("❌ Недостаточно прав.")
+        return
+
+    print(error)
+
+# =========================
 
 bot.run(TOKEN)
