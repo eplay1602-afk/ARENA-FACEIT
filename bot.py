@@ -121,7 +121,7 @@ async def profile(interaction: discord.Interaction):
             ephemeral=True
         )
 
-    font_path = os.path.join(BASE_DIR, "NextExitRounded-Black.ttf")
+    font_path = os.path.join(BASE_DIR, "NextExitRounded-Black.74b2cd1cc673040ad8c21110e711f52b.ttf")
 
     if not os.path.exists(font_path):
         return await interaction.response.send_message(
