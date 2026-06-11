@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord.ui import View
+from discord import app_commands
 import os
 
 TOKEN = os.getenv("TOKEN")
@@ -80,6 +81,7 @@ class VerifyView(View):
 
 @bot.event
 async def on_ready():
+    
     print(f"Bot online: {bot.user}")
 
     bot.add_view(VerifyView())
@@ -116,7 +118,19 @@ async def on_ready():
                 embed=embed,
                 view=VerifyView()
             )
+@bot.event
+async def on_ready():
+    print(f"Bot online: {bot.user}")
 
+    try:
+        synced = await bot.tree.sync()
+        print(f"Синхронизировано {len(synced)} команд")
+    except Exception as e:
+        print(e)
+
+    bot.add_view(VerifyView())
+
+    # остальной твой код...
 # =========================
 # КОМАНДЫ
 # =========================
@@ -138,5 +152,113 @@ async def on_command_error(ctx, error):
     print(error)
 
 # =========================
+# =========================
+# SLASH КОМАНДЫ
+# =========================
 
+@bot.tree.command(name="kick", description="Кикнуть пользователя")
+@app_commands.checks.has_permissions(kick_members=True)
+async def kick(interaction: discord.Interaction, member: discord.Member, reason: str = "Не указана"):
+    await member.kick(reason=reason)
+    await interaction.response.send_message(
+        f"👢 {member.mention} был кикнут.\nПричина: {reason}"
+    )
+
+
+@bot.tree.command(name="ban", description="Забанить пользователя")
+@app_commands.checks.has_permissions(ban_members=True)
+async def ban(interaction: discord.Interaction, member: discord.Member, reason: str = "Не указана"):
+    await member.ban(reason=reason)
+    await interaction.response.send_message(
+        f"🔨 {member.mention} был забанен.\nПричина: {reason}"
+    )
+
+
+@bot.tree.command(name="unban", description="Разбанить пользователя")
+@app_commands.checks.has_permissions(ban_members=True)
+async def unban(interaction: discord.Interaction, user_id: str):
+
+    user = await bot.fetch_user(int(user_id))
+
+    await interaction.guild.unban(user)
+
+    await interaction.response.send_message(
+        f"✅ Пользователь {user} разбанен."
+    )
+
+
+@bot.tree.command(name="mute", description="Выдать мут")
+@app_commands.checks.has_permissions(moderate_members=True)
+async def mute(
+    interaction: discord.Interaction,
+    member: discord.Member,
+    minutes: int,
+    reason: str = "Не указана"
+):
+    from datetime import timedelta
+
+    await member.timeout(
+        timedelta(minutes=minutes),
+        reason=reason
+    )
+
+    await interaction.response.send_message(
+        f"🔇 {member.mention} получил мут на {minutes} мин.\nПричина: {reason}"
+    )
+
+
+@bot.tree.command(name="unmute", description="Снять мут")
+@app_commands.checks.has_permissions(moderate_members=True)
+async def unmute(interaction: discord.Interaction, member: discord.Member):
+
+    await member.timeout(None)
+
+    await interaction.response.send_message(
+        f"🔊 Мут снят с {member.mention}"
+    )
+
+
+@bot.tree.command(name="grole", description="Выдать роль")
+@app_commands.checks.has_permissions(manage_roles=True)
+async def grole(
+    interaction: discord.Interaction,
+    member: discord.Member,
+    role: discord.Role
+):
+
+    await member.add_roles(role)
+
+    await interaction.response.send_message(
+        f"✅ Роль {role.mention} выдана {member.mention}"
+    )
+
+
+@bot.tree.command(name="gnrole", description="Забрать роль")
+@app_commands.checks.has_permissions(manage_roles=True)
+async def gnrole(
+    interaction: discord.Interaction,
+    member: discord.Member,
+    role: discord.Role
+):
+
+    await member.remove_roles(role)
+
+    await interaction.response.send_message(
+        f"❌ Роль {role.mention} забрана у {member.mention}"
+    )
+
+
+@bot.tree.command(name="clear", description="Очистить сообщения")
+@app_commands.checks.has_permissions(manage_messages=True)
+async def clear(
+    interaction: discord.Interaction,
+    amount: int
+):
+
+    await interaction.channel.purge(limit=amount)
+
+    await interaction.response.send_message(
+        f"🗑 Удалено сообщений: {amount}",
+        ephemeral=True
+    )
 bot.run(TOKEN)
