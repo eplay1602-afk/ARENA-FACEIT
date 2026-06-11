@@ -440,76 +440,76 @@ async def profile(
         if user_id == uid:
             rating = place
             break
-    print(os.listdir("."))
+        print(os.listdir("."))
 
-print("FILES:")
-print(os.listdir(BASE_DIR))
+    print("FILES:")
+    print(os.listdir(BASE_DIR))
 
-background = os.path.join(
-    BASE_DIR,
-    "Без названия7_20260612001021.png"
-)
-
-if not os.path.exists(background):
-    return await interaction.response.send_message(
-        "Файл фона не найден",
-        ephemeral=True
+    background = os.path.join(
+        BASE_DIR,
+        "Без названия7_20260612001021.png"
     )
 
-img = Image.open(background)
-draw = ImageDraw.Draw(img)
+    if not os.path.exists(background):
+        return await interaction.response.send_message(
+            "Файл фона не найден",
+            ephemeral=True
+        )
 
-font = ImageFont.truetype(
-    os.path.join(
-        BASE_DIR,
-        "NextExitRounded-Black.74b2cd1cc673040ad8c21110e711f52b.ttf"
-    ),
-    50
-)
+    img = Image.open(background)
+    draw = ImageDraw.Draw(img)
 
-draw.text(
-    (120, 110),
-    f"Nickname: {nickname}",
-    fill="white",
-    font=font
-)
+    font = ImageFont.truetype(
+        os.path.join(
+            BASE_DIR,
+            "NextExitRounded-Black.74b2cd1cc673040ad8c21110e711f52b.ttf"
+        ),
+        50
+    )
 
-draw.text(
-    (120, 190),
-    f"ELO: {elo}",
-    fill="white",
-    font=font
-)
+    draw.text(
+        (120, 110),
+        f"Nickname: {nickname}",
+        fill="white",
+        font=font
+    )
 
-draw.text(
-    (120, 270),
-    f"RATING: #{rating}",
-    fill="white",
-    font=font
-)
+    draw.text(
+        (120, 190),
+        f"ELO: {elo}",
+        fill="white",
+        font=font
+    )
 
-image_path = f"profile_{uid}.png"
+    draw.text(
+        (120, 270),
+        f"RATING: #{rating}",
+        fill="white",
+        font=font
+    )
 
-img.save(image_path)
+    image_path = f"profile_{uid}.png"
 
-file = discord.File(
-    image_path,
-    filename="profile.png"
-)
+    img.save(image_path)
 
-embed = discord.Embed(
-    title="Вот ваш профиль 👇",
-    color=discord.Color.orange()
-)
+    file = discord.File(
+        image_path,
+        filename="profile.png"
+    )
 
-embed.set_image(url="attachment://profile.png")
+    embed = discord.Embed(
+        title="Вот ваш профиль 👇",
+        color=discord.Color.orange()
+    )
 
-await interaction.response.send_message(
-    embed=embed,
-    file=file
-)
+    embed.set_image(url="attachment://profile.png")
 
-os.remove(image_path)
+    await interaction.response.send_message(
+        embed=embed,
+        file=file
+    )
+
+    os.remove(image_path)
 # =====================================
 # ОБРАБОТКА ОШИБОК
 # =====================================
