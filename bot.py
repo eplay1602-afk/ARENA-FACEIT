@@ -76,10 +76,13 @@ class VerifyModal(discord.ui.Modal, title="Верификация"):
 
         uid = str(interaction.user.id)
 
-        users[uid] = {
-            "nickname": self.nickname.value,
-            "elo": users.get(uid, {}).get("elo", 0)
-        }
+ if uid not in users:
+     users[uid] = {
+         "nickname": self.nickname.value,
+         "elo": 0
+    }
+ else:
+     users[uid]["nickname"] = self.nickname.value
 
         print("SAVE USER:", uid)
         print(users)
