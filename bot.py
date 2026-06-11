@@ -91,8 +91,7 @@ class VerifyModal(discord.ui.Modal, title="Верификация"):
             f"🆔 ID: {self.player_id.value}\n"
             f"👤 Ник: {self.nickname.value}",
             ephemeral=True
-        ) 
-    )
+        )
 class VerifyView(View):
     def __init__(self):
         super().__init__(timeout=None)
