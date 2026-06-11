@@ -108,9 +108,10 @@ class VerifyView(View):
         interaction: discord.Interaction,
         button: discord.ui.Button
     ):
-        await interaction.response.send_modal(
-            VerifyModal()
-        )
+ if not interaction.response.is_done():
+    await interaction.response.send_modal(
+        VerifyModal()
+    )
 
 # =====================================
 # СОБЫТИЯ
@@ -442,19 +443,26 @@ async def profile(
             rating = place
             break
     print(os.listdir("."))
-    print("FILES:")
-    print(os.listdir(BASE_DIR))
-    img = Image.open(
-    os.path.join(
-        BASE_DIR,
-        "Без названия7_20260612001021.png"
+
+print("FILES:")
+print(os.listdir(BASE_DIR))
+
+background = os.path.join(
+    BASE_DIR,
+    "Без названия7_20260612001021.png"
+)
+
+if not os.path.exists(background):
+    return await interaction.response.send_message(
+        "Файл фона не найден",
+        ephemeral=True
     )
-)
-)
 
-    draw = ImageDraw.Draw(img)
+img = Image.open(background)
 
-    font = ImageFont.truetype(
+draw = ImageDraw.Draw(img)
+
+font = ImageFont.truetype(
     os.path.join(
         BASE_DIR,
         "NextExitRounded-Black.74b2cd1cc673040ad8c21110e711f52b.ttf"
