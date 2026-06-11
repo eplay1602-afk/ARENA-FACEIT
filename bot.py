@@ -61,7 +61,7 @@ class VerifyModal(discord.ui.Modal, title="Верификация"):
         required=True
     )
 
- async def on_submit(self, interaction: discord.Interaction):
+    async def on_submit(self, interaction: discord.Interaction):
 
     role = interaction.guild.get_role(
         VERIFIED_ROLE_ID
