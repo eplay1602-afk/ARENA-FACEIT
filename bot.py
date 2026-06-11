@@ -15,9 +15,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 VERIFY_CHANNEL_ID = 1514680391745667082
 VERIFIED_ROLE_ID = 1514679192321658950
 
-# =====================
+# ====================
 # JSON DATA
-# =====================
+# ====================
 
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
