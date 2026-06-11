@@ -10,7 +10,9 @@ import os
 import json
 TOKEN = os.getenv("TOKEN")
 DATA_FILE = "users.json"
-
+BASE_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, "w") as f:
         json.dump({}, f)
@@ -74,13 +76,15 @@ class VerifyModal(discord.ui.Modal, title="Верификация"):
 
         uid = str(interaction.user.id)
 
-        if uid not in users:
-            users[uid] = {
-                "nickname": self.nickname.value,
-                "elo": 0
-            }
+users[uid] = {
+    "nickname": self.nickname.value,
+    "elo": users.get(uid, {}).get("elo", 0)
+}
 
-        save_users(users)
+print("SAVE USER:", uid)
+print(users)
+
+save_users(users)
 
         await interaction.response.send_message(
             f"✅ Верификация успешно пройдена!\n\n"
@@ -410,7 +414,8 @@ async def profile(
     users = load_users()
 
     uid = str(interaction.user.id)
-
+    print("PROFILE USER:", uid)
+    print("USERS:", users)
     if uid not in users:
         return await interaction.response.send_message(
             "Сначала пройдите верификацию",
@@ -436,16 +441,24 @@ async def profile(
             rating = place
             break
     print(os.listdir("."))
+    print("FILES:")
+    print(os.listdir(BASE_DIR))
     img = Image.open(
-        "Без названия7_20260612001021.PNG"
+    os.path.join(
+        BASE_DIR,
+        "Без названия7_20260612001021.png"
     )
+)
 
     draw = ImageDraw.Draw(img)
 
     font = ImageFont.truetype(
-        "NextExitRounded-Black.74b2cd1cc673040ad8c21110e711f52b.ttf",
-        50
-    )
+    os.path.join(
+        BASE_DIR,
+        "NextExitRounded-Black.74b2cd1cc673040ad8c21110e711f52b.ttf"
+    ),
+    50
+)
 
     draw.text(
         (120, 110),
