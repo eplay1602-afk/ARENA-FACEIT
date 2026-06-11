@@ -61,32 +61,33 @@ class VerifyModal(discord.ui.Modal, title="Верификация"):
         required=True
     )
 
-    async def on_submit(self, interaction: discord.Interaction):
+ async def on_submit(self, interaction: discord.Interaction):
 
-        role = interaction.guild.get_role(
-            VERIFIED_ROLE_ID
-        )
+    role = interaction.guild.get_role(
+        VERIFIED_ROLE_ID
+    )
 
-        if role:
-            await interaction.user.add_roles(role)
-users = load_users()
+    if role:
+        await interaction.user.add_roles(role)
 
-uid = str(interaction.user.id)
+    users = load_users()
 
-if uid not in users:
-    users[uid] = {
-        "nickname": self.nickname.value,
-        "elo": 0
-    }
+    uid = str(interaction.user.id)
 
-save_users(users)
-        await interaction.response.send_message(
-            f"✅ Верификация успешно пройдена!\n\n"
-            f"🆔 ID: {self.player_id.value}\n"
-            f"👤 Ник: {self.nickname.value}",
-            ephemeral=True
-        )
+    if uid not in users:
+        users[uid] = {
+            "nickname": self.nickname.value,
+            "elo": 0
+        }
 
+    save_users(users)
+
+    await interaction.response.send_message(
+        f"✅ Верификация успешно пройдена!\n\n"
+        f"🆔 ID: {self.player_id.value}\n"
+        f"👤 Ник: {self.nickname.value}",
+        ephemeral=True
+    )
 class VerifyView(View):
     def __init__(self):
         super().__init__(timeout=None)
