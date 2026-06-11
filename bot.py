@@ -457,7 +457,6 @@ if not os.path.exists(background):
     )
 
 img = Image.open(background)
-
 draw = ImageDraw.Draw(img)
 
 font = ImageFont.truetype(
@@ -503,9 +502,7 @@ embed = discord.Embed(
     color=discord.Color.orange()
 )
 
-embed.set_image(
-    url="attachment://profile.png"
-)
+embed.set_image(url="attachment://profile.png")
 
 await interaction.response.send_message(
     embed=embed,
