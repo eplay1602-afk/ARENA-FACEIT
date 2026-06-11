@@ -144,7 +144,7 @@ async def profile(interaction: discord.Interaction):
             rating = i
             break
 
-    background = os.path.join(BASE_DIR, "background.png")
+    background = os.path.join(BASE_DIR, "Без названия7_20260612001021.png")
 
     if not os.path.exists(background):
         return await interaction.response.send_message(
