@@ -9,6 +9,26 @@ from PIL import ImageFont
 import os
 import json
 TOKEN = os.getenv("TOKEN")
+DATA_FILE = "users.json"
+
+if not os.path.exists(DATA_FILE):
+    with open(DATA_FILE, "w") as f:
+        json.dump({}, f)
+
+
+def load_users():
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_users(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(
+            data,
+            f,
+            indent=4,
+            ensure_ascii=False
+        )
 
 VERIFY_CHANNEL_ID = 1514680391745667082
 VERIFIED_ROLE_ID = 1514679192321658950
