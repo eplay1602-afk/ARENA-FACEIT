@@ -14,12 +14,7 @@ bot = commands.Bot(
 @bot.event
 async def on_ready():
     print(f"Bot online: {bot.user}")
-print("TOKEN =", TOKEN)
-intents = discord.Intents.default()
-intents.message_content = True
 
-bot = commands.Bot(
-    command_prefix="!",
-    intents=intents
-)
+print("TOKEN =", TOKEN)
+
 bot.run(TOKEN)
