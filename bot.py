@@ -7,6 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 import os
 import json
 
+# ---------------- CONFIG ----------------
 TOKEN = os.getenv("TOKEN")
 
 DATA_FILE = "users.json"
@@ -15,9 +16,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 VERIFY_CHANNEL_ID = 1514680391745667082
 VERIFIED_ROLE_ID = 1514679192321658950
 
-# -------------------------
-# JSON HELPERS
-# -------------------------
+# ---------------- JSON ----------------
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump({}, f)
@@ -30,29 +29,18 @@ def save_users(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-# -------------------------
-# BOT SETUP
-# -------------------------
+# ---------------- BOT ----------------
 intents = discord.Intents.default()
-intents.message_content = True
 intents.members = True
+intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# -------------------------
-# VERIFY MODAL
-# -------------------------
+# ---------------- VERIFY MODAL ----------------
 class VerifyModal(discord.ui.Modal, title="Верификация"):
 
-    player_id = discord.ui.TextInput(
-        label="Игровой ID",
-        required=True
-    )
-
-    nickname = discord.ui.TextInput(
-        label="Ник",
-        required=True
-    )
+    player_id = discord.ui.TextInput(label="Игровой ID", required=True)
+    nickname = discord.ui.TextInput(label="Ник", required=True)
 
     async def on_submit(self, interaction: discord.Interaction):
 
@@ -75,24 +63,20 @@ class VerifyModal(discord.ui.Modal, title="Верификация"):
             ephemeral=True
         )
 
-# -------------------------
-# VERIFY VIEW
-# -------------------------
+# ---------------- VERIFY VIEW ----------------
 class VerifyView(View):
     def __init__(self):
         super().__init__(timeout=None)
 
     @discord.ui.button(
-        label="Верификация",
+        label="Пройти верификацию",
         style=discord.ButtonStyle.green,
         custom_id="verify_btn"
     )
     async def verify_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(VerifyModal())
 
-# -------------------------
-# READY EVENT
-# -------------------------
+# ---------------- ON READY ----------------
 @bot.event
 async def on_ready():
     print(f"Bot online: {bot.user}")
@@ -103,16 +87,14 @@ async def on_ready():
 
     embed = discord.Embed(
         title="Верификация",
-        description="Нажмите кнопку ниже",
+        description="Нажмите кнопку для получения доступа",
         color=discord.Color.green()
     )
 
     await channel.send(embed=embed, view=VerifyView())
 
-# -------------------------
-# PROFILE COMMAND
-# -------------------------
-@bot.tree.command(name="profile")
+# ---------------- PROFILE ----------------
+@bot.tree.command(name="profile", description="Ваш профиль")
 async def profile(interaction: discord.Interaction):
 
     users = load_users()
@@ -130,48 +112,43 @@ async def profile(interaction: discord.Interaction):
     sorted_users = sorted(users.items(), key=lambda x: x[1]["elo"], reverse=True)
     rating = next((i + 1 for i, (u, _) in enumerate(sorted_users) if u == uid), 0)
 
-    # ---------------- IMAGE ----------------
-background = os.path.join(
-    BASE_DIR,
-    "Без названия7_20260612001021.png"
-)
+    # -------- FILES CHECK --------
+    background = os.path.join(BASE_DIR, "Без названия7_20260612001021.png")
 
     if not os.path.exists(background):
         return await interaction.response.send_message(
-            "Нет фона",
+            "❌ Нет файла фона",
             ephemeral=True
         )
-
-    img = Image.open(background)
-    draw = ImageDraw.Draw(img)
 
     font_path = os.path.join(BASE_DIR, "NextExitRounded-Black.ttf")
 
     if not os.path.exists(font_path):
         return await interaction.response.send_message(
-            "Нет шрифта",
+            "❌ Нет файла шрифта",
             ephemeral=True
         )
 
+    # -------- IMAGE --------
+    img = Image.open(background)
+    draw = ImageDraw.Draw(img)
     font = ImageFont.truetype(font_path, 50)
 
     draw.text((120, 110), f"Nickname: {nickname}", font=font, fill="white")
     draw.text((120, 190), f"ELO: {elo}", font=font, fill="white")
     draw.text((120, 270), f"RANK: #{rating}", font=font, fill="white")
 
-    path = f"profile_{uid}.png"
-    img.save(path)
+    out = f"profile_{uid}.png"
+    img.save(out)
 
-    file = discord.File(path, filename="profile.png")
+    file = discord.File(out, filename="profile.png")
 
     embed = discord.Embed(title="Профиль", color=discord.Color.orange())
     embed.set_image(url="attachment://profile.png")
 
     await interaction.response.send_message(embed=embed, file=file)
 
-    os.remove(path)
+    os.remove(out)
 
-# -------------------------
-# RUN
-# -------------------------
+# ---------------- RUN ----------------
 bot.run(TOKEN)
