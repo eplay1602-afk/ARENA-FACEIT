@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
-from discord.ui import View
 from discord import app_commands
+from discord.ui import View
 from datetime import timedelta
 import os
 
@@ -20,21 +20,21 @@ bot = commands.Bot(
     intents=intents
 )
 
-# ==================================================
+# =====================================
 # ВЕРИФИКАЦИЯ
-# ==================================================
+# =====================================
 
 class VerifyModal(discord.ui.Modal, title="Верификация"):
 
     player_id = discord.ui.TextInput(
-        label="Ваш ID",
-        placeholder="Введите игровой ID",
+        label="Ваш игровой ID",
+        placeholder="Например: 12345",
         required=True
     )
 
     nickname = discord.ui.TextInput(
         label="Ваш ник",
-        placeholder="Введите ник",
+        placeholder="Например: Arena_Player",
         required=True
     )
 
@@ -47,18 +47,8 @@ class VerifyModal(discord.ui.Modal, title="Верификация"):
         if role:
             await interaction.user.add_roles(role)
 
-        verify_channel = interaction.guild.get_channel(
-            VERIFY_CHANNEL_ID
-        )
-
-        if verify_channel:
-            await verify_channel.set_permissions(
-                interaction.user,
-                view_channel=False
-            )
-
         await interaction.response.send_message(
-            f"✅ Верификация пройдена!\n\n"
+            f"✅ Верификация успешно пройдена!\n\n"
             f"🆔 ID: {self.player_id.value}\n"
             f"👤 Ник: {self.nickname.value}",
             ephemeral=True
@@ -83,9 +73,9 @@ class VerifyView(View):
             VerifyModal()
         )
 
-# ==================================================
+# =====================================
 # СОБЫТИЯ
-# ==================================================
+# =====================================
 
 @bot.event
 async def on_ready():
@@ -122,7 +112,10 @@ async def on_ready():
             embed = discord.Embed(
                 title="🔐 Верификация",
                 description=(
-                    "Для получения доступа к серверу нажмите кнопку ниже."
+                    "Для получения доступа к серверу "
+                    "нажмите кнопку ниже.\n\n"
+                    "После успешной верификации вам "
+                    "будет выдана роль."
                 ),
                 color=discord.Color.green()
             )
@@ -132,17 +125,17 @@ async def on_ready():
                 view=VerifyView()
             )
 
-# ==================================================
+# =====================================
 # ОБЫЧНЫЕ КОМАНДЫ
-# ==================================================
+# =====================================
 
 @bot.command()
 async def ping(ctx):
     await ctx.send("🏓 Pong!")
 
-# ==================================================
+# =====================================
 # SLASH КОМАНДЫ
-# ==================================================
+# =====================================
 
 @bot.tree.command(
     name="kick",
@@ -156,11 +149,11 @@ async def kick(
     member: discord.Member,
     reason: str = "Не указана"
 ):
-
     await member.kick(reason=reason)
 
     await interaction.response.send_message(
-        f"👢 {member.mention} кикнут.\nПричина: {reason}"
+        f"👢 {member.mention} был кикнут.\n"
+        f"Причина: {reason}"
     )
 
 @bot.tree.command(
@@ -175,11 +168,11 @@ async def ban(
     member: discord.Member,
     reason: str = "Не указана"
 ):
-
     await member.ban(reason=reason)
 
     await interaction.response.send_message(
-        f"🔨 {member.mention} забанен.\nПричина: {reason}"
+        f"🔨 {member.mention} был забанен.\n"
+        f"Причина: {reason}"
     )
 
 @bot.tree.command(
@@ -224,7 +217,9 @@ async def mute(
     )
 
     await interaction.response.send_message(
-        f"🔇 {member.mention} получил мут на {minutes} минут."
+        f"🔇 {member.mention} получил мут "
+        f"на {minutes} минут.\n"
+        f"Причина: {reason}"
     )
 
 @bot.tree.command(
@@ -261,7 +256,8 @@ async def grole(
     await member.add_roles(role)
 
     await interaction.response.send_message(
-        f"✅ Роль {role.mention} выдана {member.mention}"
+        f"✅ Роль {role.mention} выдана "
+        f"{member.mention}"
     )
 
 @bot.tree.command(
@@ -280,7 +276,8 @@ async def gnrole(
     await member.remove_roles(role)
 
     await interaction.response.send_message(
-        f"❌ Роль {role.mention} забрана у {member.mention}"
+        f"❌ Роль {role.mention} забрана "
+        f"у {member.mention}"
     )
 
 @bot.tree.command(
@@ -308,12 +305,15 @@ async def clear(
         ephemeral=True
     )
 
-# ==================================================
-# ОШИБКИ
-# ==================================================
+# =====================================
+# ОБРАБОТКА ОШИБОК
+# =====================================
 
 @bot.event
-async def on_command_error(ctx, error):
+async def on_command_error(
+    ctx,
+    error
+):
 
     if isinstance(
         error,
@@ -323,6 +323,6 @@ async def on_command_error(ctx, error):
 
     print(error)
 
-# ==================================================
+# =====================================
 
 bot.run(TOKEN)
