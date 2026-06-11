@@ -468,51 +468,51 @@ font = ImageFont.truetype(
     50
 )
 
-    draw.text(
-        (120, 110),
-        f"Nickname: {nickname}",
-        fill="white",
-        font=font
-    )
+draw.text(
+    (120, 110),
+    f"Nickname: {nickname}",
+    fill="white",
+    font=font
+)
 
-    draw.text(
-        (120, 190),
-        f"ELO: {elo}",
-        fill="white",
-        font=font
-    )
+draw.text(
+    (120, 190),
+    f"ELO: {elo}",
+    fill="white",
+    font=font
+)
 
-    draw.text(
-        (120, 270),
-        f"RATING: #{rating}",
-        fill="white",
-        font=font
-    )
+draw.text(
+    (120, 270),
+    f"RATING: #{rating}",
+    fill="white",
+    font=font
+)
 
-    image_path = f"profile_{uid}.png"
+image_path = f"profile_{uid}.png"
 
-    img.save(image_path)
+img.save(image_path)
 
-    file = discord.File(
-        image_path,
-        filename="profile.png"
-    )
+file = discord.File(
+    image_path,
+    filename="profile.png"
+)
 
-    embed = discord.Embed(
-        title="Вот ваш профиль 👇",
-        color=discord.Color.orange()
-    )
+embed = discord.Embed(
+    title="Вот ваш профиль 👇",
+    color=discord.Color.orange()
+)
 
-    embed.set_image(
-        url="attachment://profile.png"
-    )
+embed.set_image(
+    url="attachment://profile.png"
+)
 
-    await interaction.response.send_message(
-        embed=embed,
-        file=file
-    )
+await interaction.response.send_message(
+    embed=embed,
+    file=file
+)
 
-    os.remove(image_path)
+os.remove(image_path)
 # =====================================
 # ОБРАБОТКА ОШИБОК
 # =====================================
