@@ -14,5 +14,5 @@ bot = commands.Bot(
 @bot.event
 async def on_ready():
     print(f"Bot online: {bot.user}")
-
+print("TOKEN =", TOKEN)
 bot.run(TOKEN)
