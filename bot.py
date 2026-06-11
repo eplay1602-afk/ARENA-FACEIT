@@ -57,41 +57,35 @@ class VerifyModal(discord.ui.Modal, title="Верификация"):
         required=True
     )
 
-    nickname = discord.ui.TextInput(
-        label="Ваш ник",
-        placeholder="Например: Arena_Player",
-        required=True
-    )
-
     async def on_submit(self, interaction: discord.Interaction):
 
-        role = interaction.guild.get_role(
-            VERIFIED_ROLE_ID
-        )
+    role = interaction.guild.get_role(
+        VERIFIED_ROLE_ID
+    )
 
-        if role:
-            await interaction.user.add_roles(role)
+    if role:
+        await interaction.user.add_roles(role)
 
-        users = load_users()
+    users = load_users()
 
-        uid = str(interaction.user.id)
+    uid = str(interaction.user.id)
 
-users[uid] = {
-    "nickname": self.nickname.value,
-    "elo": users.get(uid, {}).get("elo", 0)
-}
+    users[uid] = {
+        "nickname": self.nickname.value,
+        "elo": users.get(uid, {}).get("elo", 0)
+    }
 
-print("SAVE USER:", uid)
-print(users)
+    print("SAVE USER:", uid)
+    print(users)
 
-save_users(users)
+    save_users(users)
 
-        await interaction.response.send_message(
-            f"✅ Верификация успешно пройдена!\n\n"
-            f"🆔 ID: {self.player_id.value}\n"
-            f"👤 Ник: {self.nickname.value}",
-            ephemeral=True
-        )
+    await interaction.response.send_message(
+        f"✅ Верификация успешно пройдена!\n\n"
+        f"🆔 ID: {self.player_id.value}\n"
+        f"👤 Ник: {self.nickname.value}",
+        ephemeral=True
+    )
 class VerifyView(View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -446,7 +440,8 @@ async def profile(
     img = Image.open(
     os.path.join(
         BASE_DIR,
-        "Без названия7_20260612001021.png"
+     img = Image.open(
+    "Без названия7_20260612001021.png"
     )
 )
 
