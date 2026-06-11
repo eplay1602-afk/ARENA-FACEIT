@@ -90,41 +90,35 @@ async def on_ready():
 
     bot.add_view(VerifyView())
 
-    channel = bot.get_channel(
-        VERIFY_CHANNEL_ID
-    )
+    try:
+        channel = await bot.fetch_channel(
+            VERIFY_CHANNEL_ID
+        )
 
-    if channel:
+        print("VERIFY_CHANNEL_ID =", VERIFY_CHANNEL_ID)
+        print("Канал найден =", channel)
 
-        found = False
+        embed = discord.Embed(
+            title="🔐 Верификация",
+            description=(
+                "Для получения доступа к серверу "
+                "нажмите кнопку ниже.\n\n"
+                "После успешной верификации "
+                "вам будет выдана роль."
+            ),
+            color=discord.Color.green()
+        )
 
-        async for msg in channel.history(limit=50):
+        await channel.send(
+            embed=embed,
+            view=VerifyView()
+        )
 
-            if (
-                msg.author == bot.user
-                and len(msg.components) > 0
-            ):
-                found = True
-                break
+        print("✅ Сообщение верификации отправлено")
 
-        if not found:
-
-            embed = discord.Embed(
-                title="🔐 Верификация",
-                description=(
-                    "Для получения доступа к серверу "
-                    "нажмите кнопку ниже.\n\n"
-                    "После успешной верификации вам "
-                    "будет выдана роль."
-                ),
-                color=discord.Color.green()
-            )
-
-            await channel.send(
-                embed=embed,
-                view=VerifyView()
-            )
-
+    except Exception as e:
+        print("❌ Ошибка отправки сообщения:")
+        print(e)
 # =====================================
 # ОБЫЧНЫЕ КОМАНДЫ
 # =====================================
