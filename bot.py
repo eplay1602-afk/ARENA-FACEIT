@@ -509,4 +509,8 @@ async def on_command_error(
 
 # =====================================
 
+print("COMMANDS:")
+for cmd in bot.tree.get_commands():
+    print(cmd.name)
+    
 bot.run(TOKEN)
