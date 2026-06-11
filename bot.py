@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord.ui import View
 from discord import app_commands
+from datetime import timedelta
 import os
 
 TOKEN = os.getenv("TOKEN")
@@ -19,21 +20,21 @@ bot = commands.Bot(
     intents=intents
 )
 
-# =========================
-# ФОРМА ВЕРИФИКАЦИИ
-# =========================
+# ==================================================
+# ВЕРИФИКАЦИЯ
+# ==================================================
 
 class VerifyModal(discord.ui.Modal, title="Верификация"):
 
     player_id = discord.ui.TextInput(
         label="Ваш ID",
-        placeholder="Введите ваш игровой ID",
+        placeholder="Введите игровой ID",
         required=True
     )
 
     nickname = discord.ui.TextInput(
         label="Ваш ник",
-        placeholder="Введите ваш ник",
+        placeholder="Введите ник",
         required=True
     )
 
@@ -46,16 +47,22 @@ class VerifyModal(discord.ui.Modal, title="Верификация"):
         if role:
             await interaction.user.add_roles(role)
 
-        await interaction.response.send_message(
-            f"✅ Верификация успешно пройдена!\n\n"
-            f"🆔 ID: {self.player_id}\n"
-            f"👤 Ник: {self.nickname}",
-            ephemeral=True
+        verify_channel = interaction.guild.get_channel(
+            VERIFY_CHANNEL_ID
         )
 
-# =========================
-# КНОПКА
-# =========================
+        if verify_channel:
+            await verify_channel.set_permissions(
+                interaction.user,
+                view_channel=False
+            )
+
+        await interaction.response.send_message(
+            f"✅ Верификация пройдена!\n\n"
+            f"🆔 ID: {self.player_id.value}\n"
+            f"👤 Ник: {self.nickname.value}",
+            ephemeral=True
+        )
 
 class VerifyView(View):
     def __init__(self):
@@ -64,7 +71,8 @@ class VerifyView(View):
     @discord.ui.button(
         label="Пройти верификацию",
         emoji="🔐",
-        style=discord.ButtonStyle.green
+        style=discord.ButtonStyle.green,
+        custom_id="verify_button"
     )
     async def verify_button(
         self,
@@ -75,14 +83,20 @@ class VerifyView(View):
             VerifyModal()
         )
 
-# =========================
+# ==================================================
 # СОБЫТИЯ
-# =========================
+# ==================================================
 
 @bot.event
 async def on_ready():
-    
+
     print(f"Bot online: {bot.user}")
+
+    try:
+        synced = await bot.tree.sync()
+        print(f"Синхронизировано {len(synced)} команд")
+    except Exception as e:
+        print(e)
 
     bot.add_view(VerifyView())
 
@@ -94,11 +108,11 @@ async def on_ready():
 
         found = False
 
-        async for msg in channel.history(limit=20):
+        async for msg in channel.history(limit=50):
 
             if (
                 msg.author == bot.user
-                and msg.components
+                and len(msg.components) > 0
             ):
                 found = True
                 break
@@ -108,8 +122,7 @@ async def on_ready():
             embed = discord.Embed(
                 title="🔐 Верификация",
                 description=(
-                    "Для получения доступа к серверу "
-                    "нажмите кнопку ниже."
+                    "Для получения доступа к серверу нажмите кнопку ниже."
                 ),
                 color=discord.Color.green()
             )
@@ -118,84 +131,92 @@ async def on_ready():
                 embed=embed,
                 view=VerifyView()
             )
-@bot.event
-async def on_ready():
-    print(f"Bot online: {bot.user}")
 
-    try:
-        synced = await bot.tree.sync()
-        print(f"Синхронизировано {len(synced)} команд")
-    except Exception as e:
-        print(e)
-
-    bot.add_view(VerifyView())
-
-    # остальной твой код...
-# =========================
-# КОМАНДЫ
-# =========================
+# ==================================================
+# ОБЫЧНЫЕ КОМАНДЫ
+# ==================================================
 
 @bot.command()
 async def ping(ctx):
     await ctx.send("🏓 Pong!")
 
-# =========================
-# ОШИБКИ
-# =========================
-
-@bot.event
-async def on_command_error(ctx, error):
-
-    if isinstance(error, commands.CommandNotFound):
-        return
-
-    print(error)
-
-# =========================
-# =========================
+# ==================================================
 # SLASH КОМАНДЫ
-# =========================
+# ==================================================
 
-@bot.tree.command(name="kick", description="Кикнуть пользователя")
-@app_commands.checks.has_permissions(kick_members=True)
-async def kick(interaction: discord.Interaction, member: discord.Member, reason: str = "Не указана"):
+@bot.tree.command(
+    name="kick",
+    description="Кикнуть пользователя"
+)
+@app_commands.checks.has_permissions(
+    kick_members=True
+)
+async def kick(
+    interaction: discord.Interaction,
+    member: discord.Member,
+    reason: str = "Не указана"
+):
+
     await member.kick(reason=reason)
+
     await interaction.response.send_message(
-        f"👢 {member.mention} был кикнут.\nПричина: {reason}"
+        f"👢 {member.mention} кикнут.\nПричина: {reason}"
     )
 
+@bot.tree.command(
+    name="ban",
+    description="Забанить пользователя"
+)
+@app_commands.checks.has_permissions(
+    ban_members=True
+)
+async def ban(
+    interaction: discord.Interaction,
+    member: discord.Member,
+    reason: str = "Не указана"
+):
 
-@bot.tree.command(name="ban", description="Забанить пользователя")
-@app_commands.checks.has_permissions(ban_members=True)
-async def ban(interaction: discord.Interaction, member: discord.Member, reason: str = "Не указана"):
     await member.ban(reason=reason)
+
     await interaction.response.send_message(
-        f"🔨 {member.mention} был забанен.\nПричина: {reason}"
+        f"🔨 {member.mention} забанен.\nПричина: {reason}"
     )
 
+@bot.tree.command(
+    name="unban",
+    description="Разбанить пользователя"
+)
+@app_commands.checks.has_permissions(
+    ban_members=True
+)
+async def unban(
+    interaction: discord.Interaction,
+    user_id: str
+):
 
-@bot.tree.command(name="unban", description="Разбанить пользователя")
-@app_commands.checks.has_permissions(ban_members=True)
-async def unban(interaction: discord.Interaction, user_id: str):
-
-    user = await bot.fetch_user(int(user_id))
+    user = await bot.fetch_user(
+        int(user_id)
+    )
 
     await interaction.guild.unban(user)
 
     await interaction.response.send_message(
-        f"✅ Пользователь {user} разбанен."
+        f"✅ {user} разбанен."
     )
 
-
-@bot.tree.command(name="mute", description="Выдать мут")
-@app_commands.checks.has_permissions(moderate_members=True)
+@bot.tree.command(
+    name="mute",
+    description="Выдать мут"
+)
+@app_commands.checks.has_permissions(
+    moderate_members=True
+)
 async def mute(
     interaction: discord.Interaction,
     member: discord.Member,
     minutes: int,
     reason: str = "Не указана"
 ):
-    from datetime import timedelta
 
     await member.timeout(
         timedelta(minutes=minutes),
@@ -203,13 +224,20 @@ async def mute(
     )
 
     await interaction.response.send_message(
-        f"🔇 {member.mention} получил мут на {minutes} мин.\nПричина: {reason}"
+        f"🔇 {member.mention} получил мут на {minutes} минут."
     )
 
-
-@bot.tree.command(name="unmute", description="Снять мут")
-@app_commands.checks.has_permissions(moderate_members=True)
-async def unmute(interaction: discord.Interaction, member: discord.Member):
+@bot.tree.command(
+    name="unmute",
+    description="Снять мут"
+)
+@app_commands.checks.has_permissions(
+    moderate_members=True
+)
+async def unmute(
+    interaction: discord.Interaction,
+    member: discord.Member
+):
 
     await member.timeout(None)
 
@@ -217,9 +245,13 @@ async def unmute(interaction: discord.Interaction, member: discord.Member):
         f"🔊 Мут снят с {member.mention}"
     )
 
-
-@bot.tree.command(name="grole", description="Выдать роль")
-@app_commands.checks.has_permissions(manage_roles=True)
+@bot.tree.command(
+    name="grole",
+    description="Выдать роль"
+)
+@app_commands.checks.has_permissions(
+    manage_roles=True
+)
 async def grole(
     interaction: discord.Interaction,
     member: discord.Member,
@@ -232,9 +264,13 @@ async def grole(
         f"✅ Роль {role.mention} выдана {member.mention}"
     )
 
-
-@bot.tree.command(name="gnrole", description="Забрать роль")
-@app_commands.checks.has_permissions(manage_roles=True)
+@bot.tree.command(
+    name="gnrole",
+    description="Забрать роль"
+)
+@app_commands.checks.has_permissions(
+    manage_roles=True
+)
 async def gnrole(
     interaction: discord.Interaction,
     member: discord.Member,
@@ -247,18 +283,46 @@ async def gnrole(
         f"❌ Роль {role.mention} забрана у {member.mention}"
     )
 
-
-@bot.tree.command(name="clear", description="Очистить сообщения")
-@app_commands.checks.has_permissions(manage_messages=True)
+@bot.tree.command(
+    name="clear",
+    description="Удалить сообщения"
+)
+@app_commands.checks.has_permissions(
+    manage_messages=True
+)
 async def clear(
     interaction: discord.Interaction,
     amount: int
 ):
 
-    await interaction.channel.purge(limit=amount)
+    await interaction.response.defer(
+        ephemeral=True
+    )
 
-    await interaction.response.send_message(
+    await interaction.channel.purge(
+        limit=amount
+    )
+
+    await interaction.followup.send(
         f"🗑 Удалено сообщений: {amount}",
         ephemeral=True
     )
+
+# ==================================================
+# ОШИБКИ
+# ==================================================
+
+@bot.event
+async def on_command_error(ctx, error):
+
+    if isinstance(
+        error,
+        commands.CommandNotFound
+    ):
+        return
+
+    print(error)
+
+# ==================================================
+
 bot.run(TOKEN)
