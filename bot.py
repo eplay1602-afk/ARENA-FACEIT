@@ -410,23 +410,23 @@ async def ngivelo(
     name="profile",
     description="Ваш профиль"
 )
-async def profile(
-    interaction: discord.Interaction
-):
+async def profile(interaction: discord.Interaction):
 
     users = load_users()
 
     uid = str(interaction.user.id)
+
     print("PROFILE USER:", uid)
     print("USERS:", users)
+
     if uid not in users:
         return await interaction.response.send_message(
             "Сначала пройдите верификацию",
             ephemeral=True
         )
 
-    nickname = users.get(uid, {}).get("nickname", "Unknown")
-elo = users.get(uid, {}).get("elo", 0)
+    nickname = users[uid]["nickname"]
+    elo = users[uid]["elo"]
 
     sorted_users = sorted(
         users.items(),
@@ -435,15 +435,10 @@ elo = users.get(uid, {}).get("elo", 0)
     )
 
     rating = 0
-
-    for place, (user_id, data) in enumerate(
-        sorted_users,
-        start=1
-    ):
+    for place, (user_id, data) in enumerate(sorted_users, start=1):
         if user_id == uid:
             rating = place
             break
-        print(os.listdir("."))
 
     print("FILES:")
     print(os.listdir(BASE_DIR))
@@ -470,35 +465,14 @@ elo = users.get(uid, {}).get("elo", 0)
         50
     )
 
-    draw.text(
-        (120, 110),
-        f"Nickname: {nickname}",
-        fill="white",
-        font=font
-    )
-
-    draw.text(
-        (120, 190),
-        f"ELO: {elo}",
-        fill="white",
-        font=font
-    )
-
-    draw.text(
-        (120, 270),
-        f"RATING: #{rating}",
-        fill="white",
-        font=font
-    )
+    draw.text((120, 110), f"Nickname: {nickname}", fill="white", font=font)
+    draw.text((120, 190), f"ELO: {elo}", fill="white", font=font)
+    draw.text((120, 270), f"RATING: #{rating}", fill="white", font=font)
 
     image_path = f"profile_{uid}.png"
-
     img.save(image_path)
 
-    file = discord.File(
-        image_path,
-        filename="profile.png"
-    )
+    file = discord.File(image_path, filename="profile.png")
 
     embed = discord.Embed(
         title="Вот ваш профиль 👇",
