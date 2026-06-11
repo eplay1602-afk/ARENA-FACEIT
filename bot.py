@@ -3,8 +3,11 @@ from discord.ext import commands
 from discord import app_commands
 from discord.ui import View
 from datetime import timedelta
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
 import os
-
+import json
 TOKEN = os.getenv("TOKEN")
 
 VERIFY_CHANNEL_ID = 1514680391745667082
