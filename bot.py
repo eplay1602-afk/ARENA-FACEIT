@@ -435,7 +435,7 @@ async def profile(
         if user_id == uid:
             rating = place
             break
-
+    print(os.listdir("."))
     img = Image.open(
         "Без названия7_20260612001021.PNG"
     )
