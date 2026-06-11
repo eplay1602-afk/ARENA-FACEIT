@@ -69,7 +69,17 @@ class VerifyModal(discord.ui.Modal, title="Верификация"):
 
         if role:
             await interaction.user.add_roles(role)
+users = load_users()
 
+uid = str(interaction.user.id)
+
+if uid not in users:
+    users[uid] = {
+        "nickname": self.nickname.value,
+        "elo": 0
+    }
+
+save_users(users)
         await interaction.response.send_message(
             f"✅ Верификация успешно пройдена!\n\n"
             f"🆔 ID: {self.player_id.value}\n"
@@ -321,7 +331,164 @@ async def clear(
         f"🗑 Удалено сообщений: {amount}",
         ephemeral=True
     )
+@bot.tree.command(
+    name="givelo",
+    description="Выдать ELO"
+)
+@app_commands.checks.has_permissions(
+    administrator=True
+)
+async def givelo(
+    interaction: discord.Interaction,
+    member: discord.Member,
+    amount: int
+):
 
+    users = load_users()
+
+    uid = str(member.id)
+
+    if uid not in users:
+        users[uid] = {
+            "nickname": member.name,
+            "elo": 0
+        }
+
+    users[uid]["elo"] += amount
+
+    save_users(users)
+
+    await interaction.response.send_message(
+        f"✅ {amount} ELO выдано {member.mention}"
+    )
+    
+    @bot.tree.command(
+    name="ngivelo",
+    description="Снять ELO"
+)
+@app_commands.checks.has_permissions(
+    administrator=True
+)
+async def ngivelo(
+    interaction: discord.Interaction,
+    member: discord.Member,
+    amount: int
+):
+
+    users = load_users()
+
+    uid = str(member.id)
+
+    if uid not in users:
+        return await interaction.response.send_message(
+            "Пользователь не найден",
+            ephemeral=True
+        )
+
+    users[uid]["elo"] = max(
+        0,
+        users[uid]["elo"] - amount
+    )
+
+    save_users(users)
+
+    await interaction.response.send_message(
+        f"❌ {amount} ELO снято с {member.mention}"
+    )
+    
+    @bot.tree.command(
+    name="profile",
+    description="Ваш профиль"
+)
+async def profile(
+    interaction: discord.Interaction
+):
+
+    users = load_users()
+
+    uid = str(interaction.user.id)
+
+    if uid not in users:
+        return await interaction.response.send_message(
+            "Сначала пройдите верификацию",
+            ephemeral=True
+        )
+
+    nickname = users[uid]["nickname"]
+    elo = users[uid]["elo"]
+
+    sorted_users = sorted(
+        users.items(),
+        key=lambda x: x[1]["elo"],
+        reverse=True
+    )
+
+    rating = 0
+
+    for place, (user_id, data) in enumerate(
+        sorted_users,
+        start=1
+    ):
+        if user_id == uid:
+            rating = place
+            break
+
+    img = Image.open(
+        "Без названия7_20260612001021.PNG"
+    )
+
+    draw = ImageDraw.Draw(img)
+
+    font = ImageFont.truetype(
+        "NextExitRounded-Black.74b2cd1cc673040ad8c21110e711f52b.ttf",
+        50
+    )
+
+    draw.text(
+        (120, 110),
+        f"Nickname: {nickname}",
+        fill="white",
+        font=font
+    )
+
+    draw.text(
+        (120, 190),
+        f"ELO: {elo}",
+        fill="white",
+        font=font
+    )
+
+    draw.text(
+        (120, 270),
+        f"RATING: #{rating}",
+        fill="white",
+        font=font
+    )
+
+    image_path = f"profile_{uid}.png"
+
+    img.save(image_path)
+
+    file = discord.File(
+        image_path,
+        filename="profile.png"
+    )
+
+    embed = discord.Embed(
+        title="Вот ваш профиль 👇",
+        color=discord.Color.orange()
+    )
+
+    embed.set_image(
+        url="attachment://profile.png"
+    )
+
+    await interaction.response.send_message(
+        embed=embed,
+        file=file
+    )
+
+    os.remove(image_path)
 # =====================================
 # ОБРАБОТКА ОШИБОК
 # =====================================
