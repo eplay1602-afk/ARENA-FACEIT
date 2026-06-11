@@ -102,14 +102,14 @@ class VerifyView(View):
         style=discord.ButtonStyle.green,
         custom_id="verify_button"
     )
-async def verify_button(
-    self,
-    interaction: discord.Interaction,
-    button: discord.ui.Button
-):
-    await interaction.response.send_modal(
-        VerifyModal()
-    )
+    async def verify_button(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
+        await interaction.response.send_modal(
+            VerifyModal()
+        )
 
 # =====================================
 # СОБЫТИЯ
