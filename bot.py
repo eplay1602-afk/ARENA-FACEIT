@@ -152,24 +152,20 @@ async def profile(interaction: discord.Interaction):
 
     os.remove(out)
 
-# ---------------- RUN ----------------
-bot.run(TOKEN)
-
-# ----------------COMMAND--------------
+# ---------------- LEADERBOARD ----------------
 
 @bot.tree.command(
     name="leaderboard",
-    description="Топ игроков по ELO"
+    description="Топ игроков"
 )
 async def leaderboard(interaction: discord.Interaction):
 
     users = load_users()
 
     if not users:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             "Нет игроков."
         )
-        return
 
     top = sorted(
         users.items(),
@@ -179,7 +175,7 @@ async def leaderboard(interaction: discord.Interaction):
 
     text = ""
 
-    for i, (uid, data) in enumerate(top, start=1):
+    for i, (_, data) in enumerate(top, start=1):
         text += f"**#{i}** {data['nickname']} — {data['elo']} ELO\n"
 
     embed = discord.Embed(
@@ -188,13 +184,16 @@ async def leaderboard(interaction: discord.Interaction):
         color=discord.Color.orange()
     )
 
-await interaction.response.send_message(
+    await interaction.response.send_message(
         embed=embed
     )
-    
+
+
+# ---------------- RANK ----------------
+
 @bot.tree.command(
     name="rank",
-    description="Показать место в рейтинге"
+    description="Ваше место в рейтинге"
 )
 async def rank(interaction: discord.Interaction):
 
@@ -202,11 +201,10 @@ async def rank(interaction: discord.Interaction):
     uid = str(interaction.user.id)
 
     if uid not in users:
-        await interaction.response.send_message(
+        return await interaction.response.send_message(
             "Сначала пройдите верификацию.",
             ephemeral=True
         )
-        return
 
     sorted_users = sorted(
         users.items(),
@@ -227,180 +225,3 @@ async def rank(interaction: discord.Interaction):
         f"🏆 Ваше место: **#{position}**"
     )
 
-
-@bot.tree.command(
-    name="addelo",
-    description="Выдать ELO"
-)
-async def addelo(
-    interaction: discord.Interaction,
-    member: discord.Member,
-    amount: int
-):
-
-    if MOD_ROLE_ID not in [r.id for r in interaction.user.roles]:
-        await interaction.response.send_message(
-            "❌ Нет доступа.",
-            ephemeral=True
-        )
-        return
-
-    users = load_users()
-    uid = str(member.id)
-
-    if uid not in users:
-        await interaction.response.send_message(
-            "Игрок не зарегистрирован."
-        )
-        return
-
-    users[uid]["elo"] += amount
-
-    save_users(users)
-
-    await interaction.response.send_message(
-        f"✅ {member.mention} получил {amount} ELO"
-    )
-    
-    
-    @bot.tree.command(
-    name="removeelo",
-    description="Снять ELO"
-)
-async def removeelo(
-    interaction: discord.Interaction,
-    member: discord.Member,
-    amount: int
-):
-
-    if MOD_ROLE_ID not in [r.id for r in interaction.user.roles]:
-        await interaction.response.send_message(
-            "❌ Нет доступа.",
-            ephemeral=True
-        )
-        return
-
-    users = load_users()
-    uid = str(member.id)
-
-    if uid not in users:
-        await interaction.response.send_message(
-            "Игрок не зарегистрирован."
-        )
-        return
-
-    users[uid]["elo"] = max(
-        0,
-        users[uid]["elo"] - amount
-    )
-
-    save_users(users)
-
-    await interaction.response.send_message(
-        f"✅ У {member.mention} снято {amount} ELO"
-    )
-    
-    @bot.tree.command(name="profile", description="Ваш профиль")
-async def profile(interaction: discord.Interaction):
-
-    users = load_users()
-    uid = str(interaction.user.id)
-
-    if uid not in users:
-        return await interaction.response.send_message(
-            "❌ Сначала пройдите верификацию",
-            ephemeral=True
-        )
-
-    nickname = users[uid]["nickname"]
-    game_id = users[uid]["game_id"]
-    elo = users[uid]["elo"]
-
-    sorted_users = sorted(
-        users.items(),
-        key=lambda x: x[1]["elo"],
-        reverse=True
-    )
-
-    place = next(
-        (i + 1 for i, (u, _) in enumerate(sorted_users) if u == uid),
-        0
-    )
-
-    background_path = "background.PNG"
-    font_path = "font.ttf"
-
-    if not os.path.exists(background_path):
-        return await interaction.response.send_message(
-            "❌ background.PNG не найден",
-            ephemeral=True
-        )
-
-    if not os.path.exists(font_path):
-        return await interaction.response.send_message(
-            "❌ font.ttf не найден",
-            ephemeral=True
-        )
-
-    img = Image.open(background_path).convert("RGBA")
-    draw = ImageDraw.Draw(img)
-
-    font_big = ImageFont.truetype(font_path, 55)
-    font_medium = ImageFont.truetype(font_path, 40)
-    font_small = ImageFont.truetype(font_path, 32)
-
-    draw.text(
-        (120, 120),
-        nickname,
-        font=font_big,
-        fill="white"
-    )
-
-    draw.text(
-        (120, 220),
-        f"ELO: {elo}",
-        font=font_medium,
-        fill="#ff6b00"
-    )
-
-    draw.text(
-        (120, 300),
-        f"ID: {game_id}",
-        font=font_small,
-        fill="white"
-    )
-
-    draw.text(
-        (120, 370),
-        f"TOP #{place}",
-        font=font_small,
-        fill="white"
-    )
-
-    filename = f"profile_{uid}.png"
-
-    img.save(filename)
-
-    file = discord.File(
-        filename,
-        filename="profile.png"
-    )
-
-    embed = discord.Embed(
-        title=f"Профиль {nickname}",
-        color=discord.Color.orange()
-    )
-
-    embed.set_image(
-        url="attachment://profile.png"
-    )
-
-    await interaction.response.send_message(
-        embed=embed,
-        file=file
-    )
-
-    os.remove(filename)
-    
-    
-    
