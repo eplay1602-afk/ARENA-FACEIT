@@ -133,9 +133,10 @@ async def profile(interaction: discord.Interaction):
     rating = next((i + 1 for i, (u, _) in enumerate(sorted_users) if u == uid), 0)
 
     # -------- FILES CHECK --------
-    print("BASE_DIR =", BASE_DIR)
-    print("FILES =", os.listdir(BASE_DIR))
-    background = os.path.join(BASE_DIR, "Без названия7_20260612001021.png")
+print("BASE_DIR =", BASE_DIR)
+print("FILES =", os.listdir(BASE_DIR))
+
+background = os.path.join(BASE_DIR, "background.PNG")
 
     if not os.path.exists(background):
         return await interaction.response.send_message(
@@ -143,8 +144,7 @@ async def profile(interaction: discord.Interaction):
             ephemeral=True
         )
 
-    font_path = os.path.join(BASE_DIR, "NextExitRounded-Black.74b2cd1cc673040ad8c21110e711f52b.ttf")
-
+    font_path = os.path.join(BASE_DIR, "font.ttf")
     if not os.path.exists(font_path):
         return await interaction.response.send_message(
             "❌ Нет файла шрифта",
