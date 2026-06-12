@@ -188,12 +188,12 @@ async def leaderboard(interaction: discord.Interaction):
         color=discord.Color.orange()
     )
 
-    await interaction.response.send_message(
+await interaction.response.send_message(
         embed=embed
     )
     
-    @bot.tree.command(
-    name="rank",
+@bot.tree.command(
+  name="rank",
     description="Показать место в рейтинге"
 )
 async def rank(interaction: discord.Interaction):
