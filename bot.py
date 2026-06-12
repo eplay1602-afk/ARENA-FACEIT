@@ -92,7 +92,27 @@ async def on_ready():
     )
 
     await channel.send(embed=embed, view=VerifyView())
+@bot.event
+async def on_ready():
+    print(f"Bot online: {bot.user}")
 
+    try:
+        synced = await bot.tree.sync()
+        print(f"Синхронизировано {len(synced)} команд")
+    except Exception as e:
+        print(e)
+
+    bot.add_view(VerifyView())
+
+    channel = await bot.fetch_channel(VERIFY_CHANNEL_ID)
+
+    embed = discord.Embed(
+        title="Верификация",
+        description="Нажмите кнопку для получения доступа",
+        color=discord.Color.green()
+    )
+
+    await channel.send(embed=embed, view=VerifyView())
 # ---------------- PROFILE ----------------
 @bot.tree.command(name="profile", description="Ваш профиль")
 async def profile(interaction: discord.Interaction):
