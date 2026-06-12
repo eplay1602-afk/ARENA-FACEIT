@@ -140,19 +140,18 @@ print("BACKGROUND =", background)
 print("EXISTS =", os.path.exists(background))
 
 background = os.path.join(BASE_DIR, "background.PNG")
+font_path = os.path.join(BASE_DIR, "font.ttf")
 
-    if not os.path.exists(background):
-        return await interaction.response.send_message(
-            "❌ Нет файла фона",
-            ephemeral=True
-        )
+try:
+    img = Image.open(background)
+except Exception as e:
+    return await interaction.response.send_message(
+        f"Ошибка открытия фона: {e}",
+        ephemeral=True
+    )
 
-    font_path = os.path.join(BASE_DIR, "font.ttf")
-    if not os.path.exists(font_path):
-        return await interaction.response.send_message(
-            "❌ Нет файла шрифта",
-            ephemeral=True
-        )
+draw = ImageDraw.Draw(img)
+font = ImageFont.truetype(font_path, 50)
 
     # -------- IMAGE --------
     img = Image.open(background)
