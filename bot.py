@@ -153,26 +153,50 @@ except Exception as e:
 draw = ImageDraw.Draw(img)
 font = ImageFont.truetype(font_path, 50)
 
-    # -------- IMAGE --------
-    img = Image.open(background)
-    draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype(font_path, 50)
+draw.text(
+    (120, 110),
+    f"Nickname: {nickname}",
+    font=font,
+    fill="white"
+)
 
-    draw.text((120, 110), f"Nickname: {nickname}", font=font, fill="white")
-    draw.text((120, 190), f"ELO: {elo}", font=font, fill="white")
-    draw.text((120, 270), f"RANK: #{rating}", font=font, fill="white")
+draw.text(
+    (120, 190),
+    f"ELO: {elo}",
+    font=font,
+    fill="white"
+)
 
-    out = f"profile_{uid}.png"
-    img.save(out)
+draw.text(
+    (120, 270),
+    f"RANK: #{rating}",
+    font=font,
+    fill="white"
+)
 
-    file = discord.File(out, filename="profile.png")
+out = f"profile_{uid}.png"
+img.save(out)
 
-    embed = discord.Embed(title="Профиль", color=discord.Color.orange())
-    embed.set_image(url="attachment://profile.png")
+file = discord.File(
+    out,
+    filename="profile.png"
+)
 
-    await interaction.response.send_message(embed=embed, file=file)
+embed = discord.Embed(
+    title="Профиль",
+    color=discord.Color.orange()
+)
 
-    os.remove(out)
+embed.set_image(
+    url="attachment://profile.png"
+)
+
+await interaction.response.send_message(
+    embed=embed,
+    file=file
+)
+
+os.remove(out)
 
 # ---------------- LEADERBOARD ----------------
 
