@@ -193,7 +193,7 @@ await interaction.response.send_message(
     )
     
 @bot.tree.command(
-  name="rank",
+    name="rank",
     description="Показать место в рейтинге"
 )
 async def rank(interaction: discord.Interaction):
@@ -226,8 +226,9 @@ async def rank(interaction: discord.Interaction):
     await interaction.response.send_message(
         f"🏆 Ваше место: **#{position}**"
     )
-    
-    @bot.tree.command(
+
+
+@bot.tree.command(
     name="addelo",
     description="Выдать ELO"
 )
