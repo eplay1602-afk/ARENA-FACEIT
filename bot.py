@@ -135,6 +135,9 @@ async def profile(interaction: discord.Interaction):
     # -------- FILES CHECK --------
 print("BASE_DIR =", BASE_DIR)
 print("FILES =", os.listdir(BASE_DIR))
+print("BASE_DIR =", BASE_DIR)
+print("BACKGROUND =", background)
+print("EXISTS =", os.path.exists(background))
 
 background = os.path.join(BASE_DIR, "background.PNG")
 
