@@ -225,3 +225,4 @@ async def rank(interaction: discord.Interaction):
         f"🏆 Ваше место: **#{position}**"
     )
 
+bot.run(TOKEN)
