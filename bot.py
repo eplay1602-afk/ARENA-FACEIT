@@ -113,6 +113,8 @@ async def profile(interaction: discord.Interaction):
     rating = next((i + 1 for i, (u, _) in enumerate(sorted_users) if u == uid), 0)
 
     # -------- FILES CHECK --------
+    print("BASE_DIR =", BASE_DIR)
+    print("FILES =", os.listdir(BASE_DIR))
     background = os.path.join(BASE_DIR, "Без названия7_20260612001021.png")
 
     if not os.path.exists(background):
